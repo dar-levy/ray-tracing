@@ -214,7 +214,21 @@ class Sphere(Object3D):
         self.center = center
         self.radius = radius
 
+    def compute_normal(self, *args):
+        p = args[0]
+        return normalize(p - self.center)
+
     def intersect(self, ray: Ray):
-        #TODO
-        pass
+        normal = ray.origin - self.center
+        # quadratic equation time
+        b = 2 * np.dot(ray.direction, normal)
+        c = np.linalg.norm(normal) ** 2 - self.radius ** 2
+        delta = (b * b) - 4 * c
+        if delta > 0:
+            plus = (-b + np.sqrt(delta))
+            minus = (-b - np.sqrt(delta))
+            if plus >= 0 and minus >= 0:
+                t = min(plus, minus) / 2
+                return t, self, normalize((ray.origin + t * ray.direction) - self.center)
+        return np.inf, self, self.center
 
