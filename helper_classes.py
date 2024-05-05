@@ -9,9 +9,7 @@ def normalize(vector):
 # This function gets a vector and the normal of the surface it hit
 # This function returns the vector that reflects from the surface
 def reflected(vector, axis):
-    # TODO:
-    v = np.array([0,0,0])
-    return v
+    return vector - 2 * (np.dot(vector, axis)) * axis
 
 ## Lights
 
@@ -25,22 +23,19 @@ class DirectionalLight(LightSource):
 
     def __init__(self, intensity, direction):
         super().__init__(intensity)
-        # TODO
+        self.direction = normalize(direction)
 
     # This function returns the ray that goes from the light source to a point
     def get_light_ray(self,intersection_point):
-        # TODO
-        return Ray()
+        return Ray(intersection_point, self.direction)
 
     # This function returns the distance from a point to the light source
     def get_distance_from_light(self, intersection):
-        #TODO
-        pass
+        return np.inf
 
     # This function returns the light intensity at a point
     def get_intensity(self, intersection):
-        #TODO
-        pass
+        return self.intensity
 
 
 class PointLight(LightSource):
@@ -95,7 +90,15 @@ class Ray:
         intersections = None
         nearest_object = None
         min_distance = np.inf
-        #TODO
+        for obj in objects:
+            intersection = obj.intersect(self)
+            if not intersection:
+                continue
+
+            if intersection[0] < min_distance:
+                nearest_object = intersection[1]
+                min_distance = intersection[0]
+
         return nearest_object, min_distance
 
 
@@ -120,6 +123,15 @@ class Plane(Object3D):
             return t, self
         else:
             return None
+
+    def compute_normal(self, *args):
+        return self.normal
+
+    def calc_diffuse(self, intensity, normal, ray_of_light):
+        return intensity * self.diffuse * np.dot(normal, ray_of_light)
+
+    def calc_specular(self, intensity, v, R):
+        return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
 
 
 class Triangle(Object3D):
