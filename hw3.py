@@ -52,6 +52,8 @@ def calculate_ambient_color(ambient, nearest_object):
 
 def initialize_ray_trace(ray, objects):
     nearest_object, min_distance = ray.nearest_intersected_object(objects)
+    if nearest_object is None:
+        return None, None, None, None
     intersection_p = ray.origin + (min_distance * ray.direction)
     normal_of_intersection = nearest_object.compute_normal(intersection_p)
     p = intersection_p + normal_of_intersection / (np.e ** 2)
