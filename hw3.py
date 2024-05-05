@@ -50,14 +50,11 @@ def calculate_ambient_color(ambient, nearest_object):
     return nearest_object.ambient * ambient
 
 
-def initialize_ray_trace(ray, objects):
-    nearest_object, min_distance = ray.nearest_intersected_object(objects)
-    if nearest_object is None:
-        return None, None, None, None
+def initialize_ray_trace(ray, nearest_object, min_distance):
     intersection_p = ray.origin + (min_distance * ray.direction)
     normal_of_intersection = nearest_object.compute_normal(intersection_p)
     p = intersection_p + normal_of_intersection / (np.e ** 2)
-    return nearest_object, min_distance, p, normal_of_intersection
+    return p, normal_of_intersection
 
 
 def calculate_color(camera, ambient, lights, objects, ray, max_depth, level):
@@ -65,9 +62,11 @@ def calculate_color(camera, ambient, lights, objects, ray, max_depth, level):
         return np.zeros(3)
     level += 1
 
-    nearest_object, min_distance, p, normal_of_intersection = initialize_ray_trace(ray, objects)
+    nearest_object, min_distance = ray.nearest_intersected_object(objects)
     if nearest_object is None:
         return np.zeros(3)
+
+    p, normal_of_intersection = initialize_ray_trace(ray, nearest_object, min_distance)
 
     ambient_color = calculate_ambient_color(ambient, nearest_object)
     color = calculate_light_contribution(ambient_color, lights, p, normal_of_intersection, camera, objects, nearest_object, min_distance)
