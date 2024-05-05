@@ -232,3 +232,10 @@ class Sphere(Object3D):
                 return t, self, normalize((ray.origin + t * ray.direction) - self.center)
         return np.inf, self, self.center
 
+    def calc_diffuse(self, intensity, normal, ray_of_light):
+        return intensity * self.diffuse * np.dot(normal, ray_of_light)
+
+    def calc_specular(self, intensity, v, R):
+        return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
+
+
