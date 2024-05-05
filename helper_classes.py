@@ -63,20 +63,24 @@ class PointLight(LightSource):
 class SpotLight(LightSource):
     def __init__(self, intensity, position, direction, kc, kl, kq):
         super().__init__(intensity)
-        # TODO
+        self.kc = kc
+        self.kl = kl
+        self.kq = kq
+        self.position = np.array(position)
+        self.direction = np.array(direction)
 
     # This function returns the ray that goes from the light source to a point
     def get_light_ray(self, intersection):
-        #TODO
-        pass
+        return Ray(intersection, normalize(self.position - intersection))
 
     def get_distance_from_light(self, intersection):
-        #TODO
-        pass
+        return np.linalg.norm(intersection - self.position)
 
     def get_intensity(self, intersection):
-        #TODO
-        pass
+        big_v_tag = normalize(intersection - self.position)
+        d = self.get_distance_from_light(intersection)
+        direction = -(self.direction / np.linalg.norm(self.direction))
+        return (self.intensity * np.dot(big_v_tag, direction)) / (self.kc + self.kl * d + self.kq * (d ** 2))
 
 
 class Ray:
