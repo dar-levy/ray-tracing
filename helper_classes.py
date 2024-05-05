@@ -214,7 +214,36 @@ class Sphere(Object3D):
         self.center = center
         self.radius = radius
 
-    def intersect(self, ray: Ray):
-        #TODO
-        pass
+    def compute_normal(self, *args):
+        return normalize(args[0] - self.center)
+
+    def _calculate_discriminant(self, b, c):
+        return (b * b) - 4 * c
+
+    def _find_roots(self, b, discriminant):
+        sqrt_delta = np.sqrt(discriminant)
+        return (-b + sqrt_delta) / 2, (-b - sqrt_delta) / 2
+
+    def intersect(self, ray):
+        normal = ray.origin - self.center
+        b = 2 * np.dot(ray.direction, normal)
+        c = np.linalg.norm(normal) ** 2 - self.radius ** 2
+        discriminant = self._calculate_discriminant(b, c)
+
+        if discriminant > 0:
+            t1, t2 = self._find_roots(b, discriminant)
+            if t1 >= 0 and t2 >= 0:
+                t = min(t1, t2)
+                intersection_point = ray.origin + t * ray.direction
+                normal_at_intersection = normalize(intersection_point - self.center)
+                return t, self, normal_at_intersection
+
+        return np.inf, self, normalize(ray.origin - self.center)  # Return normalized direction if no intersection
+
+    def calc_diffuse(self, intensity, normal, ray_of_light):
+        return intensity * self.diffuse * np.dot(normal, ray_of_light)
+
+    def calc_specular(self, intensity, v, R):
+        return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
+
 
