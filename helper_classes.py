@@ -215,8 +215,7 @@ class Sphere(Object3D):
         self.radius = radius
 
     def compute_normal(self, *args):
-        p = args[0]
-        return normalize(p - self.center)
+        return normalize(args[0] - self.center)
 
     def intersect(self, ray: Ray):
         normal = ray.origin - self.center
