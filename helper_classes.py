@@ -158,14 +158,52 @@ class Triangle(Object3D):
         self.normal = self.compute_normal()
 
     # computes normal to the trainagle surface. Pay attention to its direction!
-    def compute_normal(self):
-        # TODO
-        pass
+    def compute_normal(self, *args):
+        return np.linalg.norm(np.cross(self.b - self.a, self.c - self.a))
 
+    # This function returns the intersection point of the ray with the triangle
     def intersect(self, ray: Ray):
-        # TODO
-        pass
+        # Calculate edges of the triangle
+        AB = self.b - self.a
+        AC = self.c - self.a
 
+        # Calculate normal vector of the triangle
+        normal = np.cross(AB, AC)
+
+        # Check if the ray and triangle are parallel
+        parallel_check = np.dot(ray.direction, normal)
+        if parallel_check == 0:
+            return None  # No intersection
+
+        # Calculate barycentric coordinates
+        p = np.cross(ray.direction, AC)
+        denominator = np.dot(AB, p)
+        if denominator > -1e-6 and denominator < 1e-6:
+            return None  # Ray is parallel to the triangle plane
+
+        f = 1.0 / denominator
+        s = ray.origin - self.a
+        alpha = f * np.dot(s, p)
+        if alpha < 0.0:
+            return None  # Intersection is outside of the triangle
+
+        q = np.cross(s, AB)
+        beta = f * np.dot(ray.direction, q)
+        if beta < 0.0 or alpha + beta > 1.0:
+            return None  # Intersection is outside of the triangle
+
+        t = f * np.dot(AC, q)
+        if t > 1e-6:
+            return t, self
+
+        return None  # No intersection
+    
+    def calc_diffuse(self, intensity, normal, ray_of_light):
+        return intensity * self.diffuse * np.dot(normal, ray_of_light)
+
+    def calc_specular(self, intensity, v, R):
+        return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
+    
 class Pyramid(Object3D):
     """     
             D
@@ -205,16 +243,28 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
                  [4,1,0],
                  [4,2,1],
                  [2,4,0]]
-        # TODO
+        for t in t_idx:
+            l.append(Triangle(self.v_list[t[0]], self.v_list[t[1]], self.v_list[t[2]]))
+        
         return l
 
     def apply_materials_to_triangles(self):
-        # TODO
-        pass
+        for t in self.triangle_list:
+            t.set_material(self.ambient, self.diffuse, self.specular, self.shininess, self.reflection)
 
     def intersect(self, ray: Ray):
-        # TODO
-        pass
+        # Find intersection points with each triangle in the pyramid
+        intersections = []
+        for triangle in self.triangle_list:
+            intersection = triangle.intersect(ray)
+            if intersection is not None:
+                intersections.append(intersection)
+
+        # Return the nearest intersection
+        if intersections:
+            return min(intersections, key=lambda x: x[0])
+        else:
+            return None
 
 class Sphere(Object3D):
     def __init__(self, center, radius: float):
