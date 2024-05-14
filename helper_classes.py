@@ -148,7 +148,7 @@ class Triangle(Object3D):
        /  \
     A /____\ B
 
-    The fornt face of the triangle is A -> B -> C.
+    The front face of the triangle is A -> B -> C.
     
     """
     def __init__(self, a, b, c):
@@ -159,7 +159,9 @@ class Triangle(Object3D):
 
     # computes normal to the trainagle surface. Pay attention to its direction!
     def compute_normal(self, *args):
-        return np.linalg.norm(np.cross(self.b - self.a, self.c - self.a))
+        e1 = self.b - self.a
+        e2 = self.c - self.a
+        return normalize(np.cross(e1, e2))
 
     # This function returns the intersection point of the ray with the triangle
     def intersect(self, ray: Ray):
@@ -167,13 +169,11 @@ class Triangle(Object3D):
         AB = self.b - self.a
         AC = self.c - self.a
 
-        # Calculate normal vector of the triangle
-        normal = np.cross(AB, AC)
-
         # Check if the ray and triangle are parallel
-        parallel_check = np.dot(ray.direction, normal)
-        if parallel_check == 0:
-            return None  # No intersection
+        p = np.cross(ray.direction, AC)
+        denominator = np.dot(AB, p)
+        if denominator > -1e-6 and denominator < 1e-6:
+            return None  # Ray is parallel to the triangle plane
 
         # Calculate barycentric coordinates
         p = np.cross(ray.direction, AC)
@@ -240,11 +240,11 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
                 [0,1,3],
                 [1,2,3],
                 [0,3,2],
-                 [4,1,0],
-                 [4,2,1],
-                 [2,4,0]]
-        for t in t_idx:
-            l.append(Triangle(self.v_list[t[0]], self.v_list[t[1]], self.v_list[t[2]]))
+                [4,1,0],
+                [4,2,1],
+                [2,4,0]]
+        for idx in t_idx:
+            l.append(Triangle(self.v_list[idx[0]], self.v_list[idx[1]], self.v_list[idx[2]]))
         
         return l
 
@@ -253,18 +253,20 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
             t.set_material(self.ambient, self.diffuse, self.specular, self.shininess, self.reflection)
 
     def intersect(self, ray: Ray):
-        # Find intersection points with each triangle in the pyramid
-        intersections = []
+        min_distance = np.inf
+        nearest_object = None
+
         for triangle in self.triangle_list:
             intersection = triangle.intersect(ray)
-            if intersection is not None:
-                intersections.append(intersection)
+            if intersection:
+                if intersection[0] < min_distance:
+                    min_distance = intersection[0]
+                    nearest_object = intersection[1]
 
-        # Return the nearest intersection
-        if intersections:
-            return min(intersections, key=lambda x: x[0])
-        else:
-            return None
+
+        if nearest_object:
+            return min_distance, nearest_object
+
 
 class Sphere(Object3D):
     def __init__(self, center, radius: float):
