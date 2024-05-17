@@ -101,8 +101,8 @@ def your_own_scene():
     table_surface = Plane([0, 1, 0], [0, -0.3, 0])
     table_surface.set_material([0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [1, 1, 1], 1000, 0.5)
 
-    # Adding a triangle
-    triangle = Triangle([-1, 0, -1], [0.5, 0, -1], [0, 0.5, -1])
+    # Adding a triangle behind the 8-ball arrangement
+    triangle = Triangle([-1.5, 0, -4], [1.5, 0, -4], [0, 1, -4])
     triangle.set_material([0.2, 0.6, 0.2], [0.2, 0.6, 0.2], [0, 0, 0], 100, 0.5)
 
     background = Plane([0, 0, 1], [0, 0, -10])
