@@ -73,24 +73,47 @@ def calculate_color(camera, ambient, lights, objects, ray, max_depth, level):
 # Write your own objects and lights
 # TODO
 def your_own_scene():
-    camera = np.array([0, 0, 1])
+    """
+    An implementation of an 8-ball pool table with a cue ball and 15 solid balls.
+    """
+    # Cue ball (white)
+    cue_ball = Sphere(center=[0, 0, 0.01], radius=0.1)
+    cue_ball.set_material([0.9, 0.9, 0.9], [0.9, 0.9, 0.9], [0.8, 0.8, 0.8], 50, 0.2)
 
-    light_a = PointLight(intensity=np.array([1, 1, 1]), position=np.array([1, 1, 1]), kc=0.1, kl=0.1, kq=0.1)
+    # Solid balls (1-15)
+    ball_colors = [
+        [1, 0, 0], [1, 0.6, 0], [1, 1, 0], [0, 0, 0], [0.6, 0, 1],
+        [0, 1, 0], [1, 0, 1], [1, 0.6, 0.2], [0, 0.6, 0], [1, 0.5, 0],
+        [0.6, 0, 0.6], [1, 0.3, 0.7], [0.4, 0.4, 0], [0.6, 0.6, 0.6], [0.3, 0.3, 0.3]
+    ]
+    ball_positions = [
+        [0, 0.1, -1], [0.3, 0.1, -1.6], [-0.3, 0.1, -1.6], [0, 0.1, -2.2], [0.6, 0.1, -2.2],
+        [-0.6, 0.1, -2.2], [0.3, 0.1, -2.8], [-0.3, 0.1, -2.8], [0.9, 0.1, -2.8], [-0.9, 0.1, -2.8],
+        [0, 0.1, -3.4], [0.6, 0.1, -3.4], [-0.6, 0.1, -3.4], [1.2, 0.1, -3.4], [-1.2, 0.1, -3.4]
+    ]
 
-    light_c = SpotLight(intensity=np.array([1, 0, 0]), position=np.array([0, -0.5, 0]), direction=np.array([0, 0, 1]),
-                        kc=0.1, kl=0.1, kq=0.1)
+    balls = []
+    for i in range(len(ball_positions)):
+        ball = Sphere(center=ball_positions[i], radius=0.3)
+        ball.set_material(ambient=[0.1, 0.1, 0.1], diffuse=ball_colors[i], specular=[0.8, 0.8, 0.8], shininess=50, reflection=0.2)
+        balls.append(ball)
 
-    lights = [light_a, light_c]
+    table_surface = Plane([0, 1, 0], [0, -0.3, 0])
+    table_surface.set_material([0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [1, 1, 1], 1000, 0.5)
 
-    sphere_a = Sphere([-0.2, 0, -1], 0.3)
-    sphere_a.set_material(np.array([0.1, 0, 0]), np.array([0.7, 0, 0]), np.array([1, 1, 1]), 100, 0.5)
+    # Adding a triangle
+    triangle = Triangle([-1, 0, -1], [0.5, 0, -1], [0, 0.5, -1])
+    triangle.set_material([0.2, 0.6, 0.2], [0.2, 0.6, 0.2], [0, 0, 0], 100, 0.5)
 
-    triangle = Triangle([0, -4, -1], [0, 1, -1], [1, 1, -1])
-    triangle.set_material(np.array([1, 0, 0]), np.array([1, 0, 0]), np.array([0, 0, 0]), 100, 0.5)
+    background = Plane([0, 0, 1], [0, 0, -10])
+    background.set_material([0.2, 0.6, 0.2], [0.2, 0.6, 0.2], [0, 0, 0], 100, 0.5)  # Green background
 
-    plane = Plane([0, 1, 0], [0, -0.3, 0])
-    plane.set_material(np.array([0.2, 0.2, 0.2]), np.array([0.2, 0.2, 0.2]), np.array([1, 1, 1]), 1000, 0.5)
+    objects = [table_surface, background] + balls + [cue_ball, triangle]
 
-    objects = [sphere_a, plane, triangle]
+    pointlight = PointLight(intensity=np.array([1, 1, 1]), position=np.array([1, 1.5, 1]), kc=0.1, kl=0.1, kq=0.1)
+    spotlight = SpotLight(intensity=np.array([1, 1, 1]), position=np.array([0, 2, -4.5]), direction=np.array([0, -1, 0]), kc=0.1, kl=0.1, kq=0.1)
+    lights = [pointlight, spotlight]
+
+    camera = np.array([0, 1, 1])
 
     return camera, lights, objects
