@@ -73,22 +73,23 @@ def calculate_color(camera, ambient, lights, objects, ray, max_depth, level):
 # Write your own objects and lights
 # TODO
 def your_own_scene():
-    camera = np.array([0,0,1])
+    camera = np.array([0, 0, 1])
 
     light_a = PointLight(intensity=np.array([1, 1, 1]), position=np.array([1, 1, 1]), kc=0.1, kl=0.1, kq=0.1)
 
-    light_c = SpotLight(intensity=np.array([1, 0, 0]), position=np.array([0, -0.5, 0]), direction=([0, 0, 1]),
+    light_c = SpotLight(intensity=np.array([1, 0, 0]), position=np.array([0, -0.5, 0]), direction=np.array([0, 0, 1]),
                         kc=0.1, kl=0.1, kq=0.1)
 
     lights = [light_a, light_c]
+
     sphere_a = Sphere([-0.2, 0, -1], 0.3)
-    sphere_a.set_material([0.1, 0, 0], [0.7, 0, 0], [1, 1, 1], 100, 0.5)
+    sphere_a.set_material(np.array([0.1, 0, 0]), np.array([0.7, 0, 0]), np.array([1, 1, 1]), 100, 0.5)
 
     triangle = Triangle([0, -4, -1], [0, 1, -1], [1, 1, -1])
-    triangle.set_material([1, 0, 0], [1, 0, 0], [0, 0, 0], 100, 0.5)
+    triangle.set_material(np.array([1, 0, 0]), np.array([1, 0, 0]), np.array([0, 0, 0]), 100, 0.5)
 
     plane = Plane([0, 1, 0], [0, -0.3, 0])
-    plane.set_material([0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [1, 1, 1], 1000, 0.5)
+    plane.set_material(np.array([0.2, 0.2, 0.2]), np.array([0.2, 0.2, 0.2]), np.array([1, 1, 1]), 1000, 0.5)
 
     objects = [sphere_a, plane, triangle]
 
