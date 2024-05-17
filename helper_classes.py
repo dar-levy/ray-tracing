@@ -151,6 +151,7 @@ class Triangle(Object3D):
     The fornt face of the triangle is A -> B -> C.
     
     """
+
     def __init__(self, a, b, c):
         self.a = np.array(a)
         self.b = np.array(b)
@@ -158,13 +159,52 @@ class Triangle(Object3D):
         self.normal = self.compute_normal()
 
     # computes normal to the trainagle surface. Pay attention to its direction!
-    def compute_normal(self):
-        # TODO
-        pass
+    def compute_normal(self, *args):
+        e1 = self.b - self.a
+        e2 = self.c - self.a
+        return normalize(np.cross(e1, e2))
 
+    # This function returns the intersection point of the ray with the triangle
     def intersect(self, ray: Ray):
-        # TODO
-        pass
+        # Calculate edges of the triangle
+        AB = self.b - self.a
+        AC = self.c - self.a
+
+        # Check if the ray and triangle are parallel
+        p = np.cross(ray.direction, AC)
+        denominator = np.dot(AB, p)
+        if denominator > -1e-6 and denominator < 1e-6:
+            return None  # Ray is parallel to the triangle plane
+
+        # Calculate barycentric coordinates
+        p = np.cross(ray.direction, AC)
+        denominator = np.dot(AB, p)
+        if denominator > -1e-6 and denominator < 1e-6:
+            return None  # Ray is parallel to the triangle plane
+
+        f = 1.0 / denominator
+        s = ray.origin - self.a
+        alpha = f * np.dot(s, p)
+        if alpha < 0.0:
+            return None  # Intersection is outside of the triangle
+
+        q = np.cross(s, AB)
+        beta = f * np.dot(ray.direction, q)
+        if beta < 0.0 or alpha + beta > 1.0:
+            return None  # Intersection is outside of the triangle
+
+        t = f * np.dot(AC, q)
+        if t > 1e-6:
+            return t, self
+
+        return None  # No intersection
+
+    def calc_diffuse(self, intensity, normal, ray_of_light):
+        return intensity * self.diffuse * np.dot(normal, ray_of_light)
+
+    def calc_specular(self, intensity, v, R):
+        return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
+
 
 class Pyramid(Object3D):
     """     
