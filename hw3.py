@@ -3,24 +3,19 @@ import matplotlib.pyplot as plt
 
 def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
     width, height = screen_size
-    ratio = float(width) / height
-    screen = (-1, 1 / ratio, 1, -1 / ratio)  # left, top, right, bottom
+    aspect_ratio = width / height
+    screen = (-1, 1 / aspect_ratio, 1, -1 / aspect_ratio)  # left, top, right, bottom
 
     image = np.zeros((height, width, 3))
 
     for i, y in enumerate(np.linspace(screen[1], screen[3], height)):
         for j, x in enumerate(np.linspace(screen[0], screen[2], width)):
-            # screen is on origin
             pixel = np.array([x, y, 0])
             origin = camera
             direction = normalize(pixel - origin)
             ray = Ray(origin, direction)
-
-            color = np.zeros(3)
             color = calculate_color(camera, ambient, lights, objects, ray, max_depth, 1)
-
-            # We clip the values between 0 and 1 so all pixel values will make sense.
-            image[i, j] = np.clip(color,0,1)
+            image[i, j] = np.clip(color, 0, 1)
 
     return image
 
@@ -79,6 +74,22 @@ def calculate_color(camera, ambient, lights, objects, ray, max_depth, level):
 # TODO
 def your_own_scene():
     camera = np.array([0,0,1])
-    lights = []
-    objects = []
+
+    light_a = PointLight(intensity=np.array([1, 1, 1]), position=np.array([1, 1, 1]), kc=0.1, kl=0.1, kq=0.1)
+
+    light_c = SpotLight(intensity=np.array([1, 0, 0]), position=np.array([0, -0.5, 0]), direction=([0, 0, 1]),
+                        kc=0.1, kl=0.1, kq=0.1)
+
+    lights = [light_a, light_c]
+    sphere_a = Sphere([-0.2, 0, -1], 0.3)
+    sphere_a.set_material([0.1, 0, 0], [0.7, 0, 0], [1, 1, 1], 100, 0.5)
+
+    triangle = Triangle([0, -4, -1], [0, 1, -1], [1, 1, -1])
+    triangle.set_material([1, 0, 0], [1, 0, 0], [0, 0, 0], 100, 0.5)
+
+    plane = Plane([0, 1, 0], [0, -0.3, 0])
+    plane.set_material([0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [1, 1, 1], 1000, 0.5)
+
+    objects = [sphere_a, plane, triangle]
+
     return camera, lights, objects
