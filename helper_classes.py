@@ -232,6 +232,7 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
         E -> C -> B
         C -> E -> A
     """
+
     def __init__(self, v_list):
         self.v_list = v_list
         self.triangle_list = self.create_triangle_list()
@@ -239,22 +240,35 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
     def create_triangle_list(self):
         l = []
         t_idx = [
-                [0,1,3],
-                [1,2,3],
-                [0,3,2],
-                 [4,1,0],
-                 [4,2,1],
-                 [2,4,0]]
-        # TODO
+            [0, 1, 3],
+            [1, 2, 3],
+            [0, 3, 2],
+            [4, 1, 0],
+            [4, 2, 1],
+            [2, 4, 0]]
+        for idx in t_idx:
+            l.append(Triangle(self.v_list[idx[0]], self.v_list[idx[1]], self.v_list[idx[2]]))
+
         return l
 
     def apply_materials_to_triangles(self):
-        # TODO
-        pass
+        for t in self.triangle_list:
+            t.set_material(self.ambient, self.diffuse, self.specular, self.shininess, self.reflection)
 
     def intersect(self, ray: Ray):
-        # TODO
-        pass
+        min_distance = np.inf
+        nearest_object = None
+
+        for triangle in self.triangle_list:
+            intersection = triangle.intersect(ray)
+            if intersection:
+                if intersection[0] < min_distance:
+                    min_distance = intersection[0]
+                    nearest_object = intersection[1]
+
+        if nearest_object:
+            return min_distance, nearest_object
+
 
 class Sphere(Object3D):
     def __init__(self, center, radius: float):
