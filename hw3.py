@@ -101,14 +101,22 @@ def your_own_scene():
     table_surface = Plane([0, 1, 0], [0, -0.3, 0])
     table_surface.set_material([0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [1, 1, 1], 1000, 0.5)
 
-    # Adding a triangle behind the 8-ball arrangement
-    triangle = Triangle([-1.5, 0, -4], [1.5, 0, -4], [0, 1, -4])
-    triangle.set_material([0.2, 0.6, 0.2], [0.2, 0.6, 0.2], [0, 0, 0], 100, 0.5)
+    # Adding a pyramid behind the 8-ball arrangement
+    v_list = [
+        [-1, 0, -5],   # A
+        [1, 0, -5],    # B
+        [1, 0, -6],    # C
+        [-1, 0, -6],   # D
+        [0, 1.5, -5.5] # E (apex)
+    ]
+    pyramid = Pyramid(v_list)
+    pyramid.set_material([0.1, 0.1, 0.1], [0.5, 0.5, 0.5], [1, 1, 1], 500, 0.9)
+    pyramid.apply_materials_to_triangles()
 
     background = Plane([0, 0, 1], [0, 0, -10])
     background.set_material([0.2, 0.6, 0.2], [0.2, 0.6, 0.2], [0, 0, 0], 100, 0.5)  # Green background
 
-    objects = [table_surface, background] + balls + [cue_ball, triangle]
+    objects = [table_surface, background] + balls + [cue_ball, pyramid]
 
     pointlight = PointLight(intensity=np.array([1, 1, 1]), position=np.array([1, 1.5, 1]), kc=0.1, kl=0.1, kq=0.1)
     spotlight = SpotLight(intensity=np.array([1, 1, 1]), position=np.array([0, 2, -4.5]), direction=np.array([0, -1, 0]), kc=0.1, kl=0.1, kq=0.1)
@@ -117,3 +125,5 @@ def your_own_scene():
     camera = np.array([0, 1, 1])
 
     return camera, lights, objects
+
+
