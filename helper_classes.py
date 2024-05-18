@@ -97,18 +97,15 @@ class Ray:
     # The function is getting the collection of objects in the scene and looks for the one with minimum distance.
     # The function should return the nearest object and its distance (in two different arguments)
     def nearest_intersected_object(self, objects):
+        minimal_distance = np.inf
         nearest_object = None
-        min_distance = np.inf
         for obj in objects:
             intersection = obj.intersect(self)
-            if not intersection:
-                continue
-
-            if intersection[0] < min_distance:
+            if intersection and intersection[0] < minimal_distance:
+                minimal_distance = intersection[0]
                 nearest_object = intersection[1]
-                min_distance = intersection[0]
 
-        return nearest_object, min_distance
+        return nearest_object, minimal_distance
 
 
 class Object3D:
