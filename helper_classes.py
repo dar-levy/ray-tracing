@@ -11,6 +11,14 @@ def normalize(vector):
 def reflected(vector, axis):
     return vector - 2 * (np.dot(vector, axis)) * axis
 
+def refracted(vector, normal, n1, n2):
+    n = n1 / n2
+    cos_theta = np.dot(normal, vector)
+    sin_theta = np.sqrt(1 - cos_theta ** 2)
+    sin_phi = n * sin_theta
+    cos_phi = np.sqrt(1 - sin_phi ** 2)
+    return n * vector + (n * cos_theta - cos_phi) * normal
+
 ## Lights
 
 
@@ -110,12 +118,15 @@ class Ray:
 
 
 class Object3D:
-    def set_material(self, ambient, diffuse, specular, shininess, reflection):
+    def set_material(self, ambient, diffuse, specular, shininess, reflection, refraction = 0, refractive_index = 1.0):
         self.ambient = ambient
         self.diffuse = diffuse
         self.specular = specular
         self.shininess = shininess
         self.reflection = reflection
+        self.refraction = refraction
+        self.refractive_index = refractive_index
+        
 
 
 class Plane(Object3D):

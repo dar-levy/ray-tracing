@@ -30,6 +30,22 @@ def calculate_reflected_color(p, camera, ambient, lights, objects, ray, max_dept
     reflected_ray = Ray(p, normalize(reflected(ray.direction, normal_of_intersection)))
     return kr * calculate_color(camera, ambient, lights, objects, reflected_ray, max_depth, level)
 
+def calculate_refracted_color(p, camera, ambient, lights, objects, ray, max_depth, level, normal_of_intersection, nearest_object):
+    kt = nearest_object.refraction
+    if kt > 0:
+        n1 = 1.0  # Refractive index of air
+        n2 = nearest_object.refractive_index  # Refractive index of the object
+        cos_i = np.dot(ray.direction, -normal_of_intersection)
+        sin_t2 = (n1 / n2) ** 2 * (1 - cos_i ** 2)
+        if sin_t2 > 1:
+            # Total internal reflection
+            return np.zeros(3)
+        cos_t = np.sqrt(1 - sin_t2)
+        refracted_direction = (n1 / n2) * ray.direction + (n1 / n2 * cos_i - cos_t) * normal_of_intersection
+        refracted_ray_origin = p + normal_of_intersection * (nearest_object.radius + 0.001)
+        refracted_ray = Ray(refracted_ray_origin, refracted_direction)
+        return kt * calculate_color(camera, ambient, lights, objects, refracted_ray, max_depth, level)
+    return np.zeros(3)
 
 def calculate_light_contribution(ambient_color, lights, p, normal_of_intersection, camera, objects, nearest_object, min_distance):
     color = np.float64(ambient_color)
@@ -71,6 +87,7 @@ def calculate_color(camera, ambient, lights, objects, ray, max_depth, level):
     ambient_color = calculate_ambient_color(ambient, nearest_object)
     color = calculate_light_contribution(ambient_color, lights, p, normal_of_intersection, camera, objects, nearest_object, min_distance)
     color += calculate_reflected_color(p, camera, ambient, lights, objects, ray, max_depth, level, normal_of_intersection, nearest_object)
+    color += calculate_refracted_color(p, camera, ambient, lights, objects, ray, max_depth, level, normal_of_intersection, nearest_object)
 
     return color
 
@@ -88,8 +105,8 @@ def your_own_scene():
     # Solid balls (1-15)
     ball_colors = [[1, 0, 0], 
                    [1, 0.6, 0], [1, 1, 0], 
-                   [0.6, 0, 1], [1, 0, 1], [0, 1, 0], 
-                   [0, 0, 0], [1, 0.6, 0.2], [0, 0.6, 0], [1, 0.5, 0], 
+                   [0, 0, 0], [0.6, 0, 1], [0, 1, 0], 
+                   [1, 0, 1], [1, 0.6, 0.2], [0, 0.6, 0], [1, 0.5, 0], 
                    [0.6, 0, 0.6], [1, 0.3, 0.7], [0.4, 0.4, 0], [0.6, 0.6, 0.6], [0.3, 0.3, 0.3]]
     ball_positions = [[0, 0.1, -1], 
                       [0.3, 0.1, -1.6], [-0.3, 0.1, -1.6],
@@ -106,7 +123,8 @@ def your_own_scene():
     table_surface = Plane([0, 1, 0], [0, -0.3, 0])
     table_surface.set_material([0.2, 0.2, 0.2], [0.2, 0.2, 0.2], [1, 1, 1], 1000, 0.5)
 
-    background = Plane([0, 0, 1], [0, 0, -100])
+
+    background = Plane([0, 0, 1], [0, 0, -10])
     background.set_material([0.2, 0.6, 0.2], [0.2, 0.6, 0.2], [0, 0, 0], 100, 0.5)  # Green background
 
     objects = [table_surface, background] + balls + [cue_ball]
@@ -119,4 +137,31 @@ def your_own_scene():
 
     camera = np.array([0, 1, 1])
     
+    return camera, lights, objects
+
+def refracted_scene():
+    """
+    A scene with a glass sphere and a red ball behind it to the right, showing refraction.
+    """
+    # Glass sphere
+    glass_sphere = Sphere(center=[0, 0, 0], radius=0.3)
+    glass_sphere.set_material([0.1, 0.1, 0.1], [0.1, 0.1, 0.1], [0.8, 0.8, 0.8], 50, 0.2, 1, refractive_index=1.52)
+
+    # Red ball
+    red_ball = Sphere(center=[1, 0, -5], radius=0.5)
+    red_ball.set_material([0.1, 0.1, 0.1], [0.8, 0.1, 0.1], [0.8, 0.8, 0.8], 50, 0.2)
+
+    # Background plane
+    background = Plane([0, 0, 1], [0, 0, -10])
+    background.set_material([0.8, 0.8, 0.8], [0.8, 0.8, 0.8], [0, 0, 0], 100, 0.5)
+
+    objects = [glass_sphere, red_ball, background]
+
+    # Lights
+    pointlight = PointLight(intensity=np.array([1, 1, 1]), position=np.array([-2, 2, 2]), kc=0.1, kl=0.1, kq=0.1)
+    lights = [pointlight]
+
+    # Camera
+    camera = np.array([0, 0, 2])
+
     return camera, lights, objects
