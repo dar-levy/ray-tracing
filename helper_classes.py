@@ -11,6 +11,14 @@ def normalize(vector):
 def reflected(vector, axis):
     return vector - 2 * (np.dot(vector, axis)) * axis
 
+def refracted(vector, normal, n1, n2):
+    n = n1 / n2
+    cos_theta = np.dot(normal, vector)
+    sin_theta = np.sqrt(1 - cos_theta ** 2)
+    sin_phi = n * sin_theta
+    cos_phi = np.sqrt(1 - sin_phi ** 2)
+    return n * vector + (n * cos_theta - cos_phi) * normal
+
 ## Lights
 
 
@@ -109,12 +117,15 @@ class Ray:
 
 
 class Object3D:
-    def set_material(self, ambient, diffuse, specular, shininess, reflection):
+    def set_material(self, ambient, diffuse, specular, shininess, reflection, refraction = 0, refractive_index = 1.0):
         self.ambient = ambient
         self.diffuse = diffuse
         self.specular = specular
         self.shininess = shininess
         self.reflection = reflection
+        self.refraction = refraction
+        self.refractive_index = refractive_index
+        
 
 
 class Plane(Object3D):
@@ -147,7 +158,7 @@ class Triangle(Object3D):
        /  \
     A /____\ B
 
-    The fornt face of the triangle is A -> B -> C.
+    The front face of the triangle is A -> B -> C.
     
     """
 
@@ -197,14 +208,13 @@ class Triangle(Object3D):
             return t, self
 
         return None  # No intersection
-
+    
     def calc_diffuse(self, intensity, normal, ray_of_light):
         return intensity * self.diffuse * np.dot(normal, ray_of_light)
 
     def calc_specular(self, intensity, v, R):
         return self.specular * intensity * (np.power(np.dot(v, R), self.shininess))
-
-
+    
 class Pyramid(Object3D):
     """     
             D
@@ -239,15 +249,15 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
     def create_triangle_list(self):
         l = []
         t_idx = [
-            [0, 1, 3],
-            [1, 2, 3],
-            [0, 3, 2],
-            [4, 1, 0],
-            [4, 2, 1],
-            [2, 4, 0]]
+                [0,1,3],
+                [1,2,3],
+                [0,3,2],
+                [4,1,0],
+                [4,2,1],
+                [2,4,0]]
         for idx in t_idx:
             l.append(Triangle(self.v_list[idx[0]], self.v_list[idx[1]], self.v_list[idx[2]]))
-
+        
         return l
 
     def apply_materials_to_triangles(self):
@@ -264,6 +274,7 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
                 if intersection[0] < min_distance:
                     min_distance = intersection[0]
                     nearest_object = intersection[1]
+
 
         if nearest_object:
             return min_distance, nearest_object

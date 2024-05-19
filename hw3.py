@@ -127,3 +127,29 @@ def your_own_scene():
     return camera, lights, objects
 
 
+def refracted_scene():
+    """
+    A scene with a glass sphere and a red ball behind it to the right, showing refraction.
+    """
+    # Glass sphere
+    glass_sphere = Sphere(center=[0, 0, 0], radius=0.3)
+    glass_sphere.set_material([0.1, 0.1, 0.1], [0.1, 0.1, 0.1], [0.8, 0.8, 0.8], 50, 0.2, 1, refractive_index=1.52)
+
+    # Red ball
+    red_ball = Sphere(center=[1, 0, -5], radius=0.5)
+    red_ball.set_material([0.1, 0.1, 0.1], [0.8, 0.1, 0.1], [0.8, 0.8, 0.8], 50, 0.2)
+
+    # Background plane
+    background = Plane([0, 0, 1], [0, 0, -10])
+    background.set_material([0.8, 0.8, 0.8], [0.8, 0.8, 0.8], [0, 0, 0], 100, 0.5)
+
+    objects = [glass_sphere, red_ball, background]
+
+    # Lights
+    pointlight = PointLight(intensity=np.array([1, 1, 1]), position=np.array([-2, 2, 2]), kc=0.1, kl=0.1, kq=0.1)
+    lights = [pointlight]
+
+    # Camera
+    camera = np.array([0, 0, 2])
+
+    return camera, lights, objects
